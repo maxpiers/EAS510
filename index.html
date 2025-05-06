@@ -379,14 +379,14 @@
 							<section id="four">
 								<div class="container">
 									<h3>Discussion</h3>
-									<p>At this stage, training Resnet50 with pretrained ImageNet1k weights on our dataset yields a %47.76 test accuracy with 1.6091 loss. 
-										Working through this project, we gained experience in the use of APIs, web scraping, dataset maintenance and analysis and learned 
+									<p>At this stage, training Resnet50 with pretrained ImageNet1k weights on our dataset yields a 47.76% test accuracy with 1.6091 loss. 
+										Working through this project, we gained experience in the use of APIs, web scraping, dataset maintenance and analysis, and learned 
 										that the simplest and safest strategy to prevent overfitting is to collect more data from underrrepresented labels. Additionally,
 										we experimented with model training, regularization and learning rate scheduling, and transfer learning, and found that the newest 
 										and biggest model is not always the best for any given dataset. Our next steps would be to cross-reference our TMDB genre data with 
-										genre data from another site, such as IMDB, to ensure accuracy or our labels. Additionally, we plan to treat this problem as multilabel, 
-										using binary cross entropy loss, rather than as multiclass. Initial experimentation showed a validation accuracy of 80% after just 3 epochs,
-									 	but analysis showed that this measurement was not reflected in the predictions:</p>
+										genre data from another site, such as IMDB, to ensure accuracy of our labels. Additionally, future attempts would explore treating 
+										this problem as multilabel, using binary cross entropy loss, rather than as multiclass. Initial experimentation showed a validation 
+										accuracy of 80% after just 3 epochs, but further analysis showed that this measurement was not reflected in the predictions:</p>
 										<span class="image fit"><img src="images/multilabel predictions.png" alt="" /></span>
 										<p>Further research into prediction thresholds, suitable multilabel metrics, and techniques for sampling well-balanced train and test sets from 
 											heavily imbalanced and overlapping multilabel data will be required before this method could prove viable.</p>
