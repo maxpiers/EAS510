@@ -1,0 +1,763 @@
+<!DOCTYPE HTML>
+<!--
+	Read Only by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+	<head>
+		<title>Movie Genre Classification</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="stylesheet" href="assets/css/main.css" />
+	</head>
+	<body class="is-preload">
+
+		<!-- Header -->
+			<section id="header">
+				<header>
+					<span class="image avatar"><img src="images/avatar.jpg" alt="" /></span>
+					<h1 id="logo"><a href="#">Movie Genre Classification</a></h1>
+					<p>A Multi-Modal Approach<br />
+					for EAS501</p>
+				</header>
+				<nav id="nav">
+					<ul>
+						<li><a href="#one" class="active">Problem Statement</a></li>
+						<li><a href="#two">Data Preprocessing</a></li>
+						<li><a href="#three">Image Model</a></li>
+						<li><a href="#four">Discussion</a></li>
+						<li><a href="#five">Citations</a></li>
+					</ul>
+				</nav>
+				<footer>
+					<ul>
+						<li>Data & Image Model: Max Pierson</li>
+						<li>Text Model: Jaya Chandra Galda</li>
+						<li>Fusion Model: Saakketh Gouti</li>
+					</ul>
+				</footer>
+			</section>
+
+		<!-- Wrapper -->
+			<div id="wrapper">
+
+				<!-- Main -->
+					<div id="main">
+
+						<!-- One -->
+							<section id="one">
+								<div class="image main" data-position="center">
+									<img src="images/banner.png" alt="" />
+								</div>
+								<div class="container">
+									<header class="major">
+										<h2>Problem Statement</h2>
+										<p>Why multi-modal genre classification?</p>
+									</header>
+									<p>Movie Genre Classification is an important part of recommendation systems, and correct classification is key to ensure movies reach the correct audience. 
+										However, due to the tendency of movies to overlap into several genres, and the general lack of hard boundaries between the definitions of these genres, 
+										relying on a single data feature of a movie can limit our ability to classify movies correctly. Our team will design our models using a multi-modal 
+										approach to combine textual data (movie plot overviews) and visual data (movie posters). At the current stage we are treating the problem as multiclass, 
+										with at most 3 genres per label. We will evaluate the performance of an image only model, a text only model, and a fusion model. 
+									</p>
+									<header class="major">
+										<p>Approach & Goals:</p>
+									</header>
+									<p>The following sections will outline our methods for handling data, image modeling, text modeling, and fusion modeling. Our goals in this approach are to learn 
+										and experiment with data preprocessing, model selection and design, and model fusion, as well as to simulate the workflow of projects in the professional world.
+										
+									</p>
+								</div>
+							</section>
+
+						<!-- Two -->
+							<section id="two">
+								<div class="container">
+									<h3>Data Preprocessing</h3>
+									<h5>Data Lead: Max Pierson</h5>
+										<p>Our overall strategy for dataset creation was to collect as much data as possible. Once completed, the highest occuring multigenre combinations were 
+											 to be used in our datasets. We also utilized undersampling among these chosen classes to create a balanced final dataset.
+											Several different datasets were created and tested throughout this project, however, collection of the data for all sets followed the same basic plan:</p>
+									<div class="col-6 col-12-xsmall">
+										<ol>
+											<li> Movie Data Collection <br>
+											</li>Using the TMDB API with the tmdbsimple wrapper, we searched movies by id and collected the following into a csv file:
+											<br>
+											<div class="features">
+												<article>
+													<a href="#" class="image right"><img src="images/TMDB_logo.png" alt="" /></a>
+												</article>
+											</div>
+											<ul>
+												<li>Id</li>
+												<li>Title</li>
+												<li>Overview</li>
+												<li>Poster Path</li>
+												<li>Genres</li>
+											</ul>
+											<li>Poster Collection<br>
+												Using the poster path, all images were collected as 500 x 750 jpgs from TMDB. In the final datasets, each poster is saved as a 256x256 jpg 
+												inside the folder ‘posters.zip’, and is labelled by its unique TMDB movie id.</li>
+											<li>Data Cleaning<br>
+												After data was collected, any rows with missing values or bad poster paths were removed. This ’bad’ data was saved for future use, if needed.
+											</li>
+											<li>Undersampling<br>
+												After data was cleaned, heavily occuring classes (generally at least 1,000 instances) were selected to be sampled from. These classes were then undersampled to create a normal distribution.
+											</li>
+											<li>Train-Test Split<br>
+												Remaining data was then split into training, test, and validation sets at a ratio of
+												<br> 80% training, 10% test, 10% validation.
+											</li>
+										</ol>
+									</div>
+									<span class="image fit"><img src="images/Data workflow-1.jpg" alt="" /></span>
+									<h4>ID Selection</h4>
+									<p>Our strategy for ID data was to collect as many data points as possible to generate more instances of the rarer genres, allowing us to undersample the more strongly represented genres and still have a large final dataset. To this end, TMDB IDs were collected using the following three methods:</p>
+										<div class="features">
+											<article>
+												<a href="#" class="image"><img src="images/TMDB_rand_ID.png" alt="" /></a>
+												<div class="inner">1. TMDB_genre
+												<p>IDs were randomly selected from all available ids in TMDB until 100,000 movies were collected. This resulted in quite messy data, with only 47,324 movies remaining after cleaning. Additionally, it revealed a significant disparity in genre representation, So a second method was developed:</p>
+											</div>
+										</div>
+										<div class="features">
+											<article>
+												<a href="#" class="image"><img src="images/TMDB_genre.png" alt="" /></a>
+												<div class="inner">1. TMDB_rand_ID
+												<p>IDs collected using Genre request inside tmdbsimple, which provides a list of up to 500 pages worth of movies belonging to each genre requested. This yielded 117,370 movies after cleaning, and a much better representation of the rarer genres. However, to ensure the robustness of our dataset, we added a third set:
+												</p>
+												</div>
+										</div>
+										<div class="features">
+											<article>
+												<a href="#" class="image"><img src="images/TMDB_v11.png" alt="" /></a>
+												<div class="inner">1. TMDB_v11
+												<p>IDs were collected from the Kaggle database 'TMDB_movie_dataset_v11.csv' which offers data on over 1 million movies. After, cleaning, we were left with 361,940 movies.
+												</p>
+												</div>
+										</div>
+										<h4>Podge</h4>
+										<p>We then combined these three datasets, removing any duplicate IDs. During this process, it was also noted that some movies in the database were duplicates with different IDs. 
+										Though some movies shared the same title but were not duplicates, it was decided the safest measure to take would be to remove any duplicate titles in the new set. 
+										This process resulted in the podge dataset, which contains data on 346,934 unique movies.</p>
+									<span class="image fit"><img src="images/Podge.png" alt="" /></span>
+									<p>As seen above, there still remains a significant imbalance in genre representation. We further reduced this dataset to movies containing 1 to 3 labels and, in order to 
+										address the imbalance, we grouped related genres together. The result is podge_combi_3g, a set which contains 333,783 movies belonging to 366 different genre combinations. 
+										Of these genre combinations, 39 have over 2,000 instances, and each single-genre  label has over 3,000 instances. By undersampling all of these labels down to these limits, 
+										we developed two multiclass datasets: one multigenre and one single-genre.</p>
+									<span class="image fit"><img src="images/Podge_combi.png" alt="" /></span>
+										<div class="features">
+												<span class="image fit"><img src="images/Podge_3g_combi_2000.png" alt="" /></span>
+												<div class="inner">
+													<h5>Podge_3g_combi_2000</h5>
+												<ul>
+													<li>39 multigenre labels</li>
+													<li>78,000 movies, 2,000 per label</li>
+												</ul>
+												</div>
+													<span class="image fit"><img src="images/Podge_1g_combi_3000.png" alt="" /></span>
+												<div class="inner">
+													<h5>Podge_1g_combi_3000</h5>
+												<ul>
+													<li>13 single-genre labels</li>
+													<li>38,857 movies</li>
+													<li>Note: Crime_Mystery has only 2,857 movies, all others have 3,000</li>
+												</ul>
+												</div>
+										</div>
+								</div>
+							</section>
+
+						<!-- Three -->
+						<section id="three">
+							<div class="container">
+								<h3>Image Model</h3>
+								<h5>Image Model Lead: Max Pierson</h5>
+								<p>For this project we experimented with transfer learning on several architectures, using the pretrained weights from ImageNet1k. 
+									The only changes made to these architectures was the output shape to fit our dataset, as well as the altering of dropout layers
+									to a value of p=0.5 at most. After some experimentation, it was determined that best performance is given when training all layers 
+									without any freezing. Using this strategy, we experimented on Podge_1g_combi_3000 with the following model architectures:</p>
+								<h5>VGG</h5>
+								<p>VGG was designed as an experiment to increase depth of a CNN. A CNN uses convolutional layers to apply filters to an 
+									input image in order to extract important features, similar to edge and shape detection. It utilizes a standard CNN 
+									architecture with 3x3 convolutional filters, and increases depth to up to 19 layers. Though it is no longer considered 
+									state of the art, early experimentation with it can provide a baseline expectation on loss and accuracy to build from.</p>
+								<h5>EfficientNet</h5>
+								<p>EfficientNet uses a set of fixed scaling coefficients for the width, depth, and resolution in order to scale up model 
+									size efficiently, allowing for improved accuracy while maintaining a lower computational cost and resource expenditure on 
+									parameter searching. Experimentation with this model will be done with versions B0 and B2, as we do not currently have
+									the computational resources to handle the larger versions.</p>
+								<h5>ResNet</h5>	
+								<p>ResNet addresses the issue of vanishing gradients in deep CNNs, or the tendency for gradients to approach zero during backpropogation 
+									to early layers of a deep neural network. This is achieved with a residual block: a CNN block in which a copy of the input to the 
+									block is added directly to the output. This allows the model to go much deeper without losing training stability. Currently, we expect This
+									architecture to provide the best results for our dataset.</p>
+								<h5>Visual Transformer</h5>
+								<p>A Visual Transformer is a self-attention based architecture that eliminates the need for convolutional layers by converting the input image 
+									into a linear embedding of patches, allowing the image to be treated the same as a tokenized sequence of words. This technique has been shown 
+									to be successful with very large datasets (well over 10 million images) but is not expected to outperform CNN architectures for a dataset of our size. </p>
+								
+								<h4>Image Transforms</h4>
+								<p>In order to reduce chances of overfitting, we employed several transforms to alter the incoming training data. To alter alignment we use RandomResizedCrop 
+									followed by RandomHorizontalFlip. For coloring we use ColorJitter and RandomGreyscale. After some experimentation, we noted some benefit from the addition 
+									of TrivialAugmentWide. We finally convert to a tensor and normalize, performing an inline calculation of the mean and standard deviation based on 
+									the desired image and batch sizes. </p>
+								<h3>Experimentation & Results</h3>
+								<h4>Baseline: VGG19</h4>
+								<ul>
+									<li>SGD with momentum = 0, weight decay = 1e-5</li>
+									<li>Learning Rate Scheduler: Cosine Annealing with a 5 epoch linear warmup</li>
+									<li>Max LR: 0.05</li>
+									<li>Training Length: 30 epochs</li>
+								</ul>
+								<p>Final Loss and Accuracy Values:</p>
+								<ul>
+									<li>Train loss: 1.7032 | Train Micro Accuracy: 0.4371</li>
+									<li>Val Loss: 1.7619 | Val Micro Accuracy: 0.4439</li>
+									<li>Test Loss: 1.7031 | Test Micro Accuracy: 0.4478</li>
+								</ul>
+								<span class="image fit"><img src="images/vgg.png" alt="" /></span>
+								<span class="image fit"><img src="images/vgg_preds1.png" alt="" /></span>
+								
+								<h4>EfficientNet_B0</h4>
+								<ul>
+									<li>SGD with momentum = 0, weight decay = 0</li>
+									<li>Learning Rate Scheduler: Cosine Annealing with a 5 epoch linear warmup</li>
+									<li>Max LR: 0.05</li>
+									<li>Training Length: 30 epochs</li>
+								</ul>
+								<p>Final Loss and Accuracy Values:</p>
+								<ul>
+									<li>Train loss: 1.6621 | Train Micro Accuracy: 0.4513</li>
+									<li>Val Loss: 1.6618 | Val Micro Accuracy: 0.4521</li>
+									<li>Test Loss: 1.9171 | Test Micro Accuracy: 0.4604</li>
+								</ul>
+								<span class="image fit"><img src="images/effnet_b0_v2.png" alt="" /></span>
+								<span class="image fit"><img src="images/effnet_b0_preds1.png" alt="" /></span>
+								<span class="image fit"><img src="images/effnet_b0_preds2.png" alt="" /></span>
+
+								<h4>ResNet50</h4>
+								<ul>
+									<li>SGD with momentum = 0, weight decay = 0</li>
+									<li>Learning Rate Scheduler: Cosine Annealing with a 5 epoch linear warmup</li>
+									<li>Max LR: 0.05</li>
+									<li>Training Length: 30 epochs</li>
+								</ul>
+								<p>Final Loss and Accuracy Values:</p>
+								<ul>
+									<li>Train loss: 1.6008 | Train Micro Accuracy: 0.4718</li>
+									<li>Val Loss: 1.6314 | Val Micro Accuracy: 0.4696</li>
+									<li>Test Loss: 1.6091 | Test Micro Accuracy: 0.4776</li>
+								</ul>
+								<span class="image fit"><img src="images/resnet.png" alt="" /></span>
+								<span class="image fit"><img src="images/resnet_50_preds1.png" alt="" /></span>
+								<span class="image fit"><img src="images/resnet_50_preds2.png" alt="" /></span>
+
+								<h4>ViT_B_32</h4>
+								<ul>
+									<li>AdamW with weight decay = 0.2</li>
+									<li>Learning Rate Scheduler: Cosine Annealing with a 5 epoch linear warmup</li>
+									<li>Max LR: 1e-3</li>
+									<li>Training Length: 40 epochs</li>
+								</ul>
+								<p>Final Loss and Accuracy Values:</p>
+								<ul>
+									<li>Train loss: 1.6324 | Train Micro Accuracy: 0.4601</li>
+									<li>Val Loss: 1.6873 | Val Micro Accuracy: 0.4547</li>
+									<li>Test Loss: 1.6962 | Test Micro Accuracy: 0.4478</li>
+								</ul>
+								<span class="image fit"><img src="images/vit.png" alt="" /></span>
+								<span class="image fit"><img src="images/Vit_preds1.png" alt="" /></span>
+								<span class="image fit"><img src="images/Vit_preds2.png" alt="" /></span>
+								
+								<h4>Further Analysis</h4>
+								<p>At this stage we have determined that ResNet is the best model to fit our current dataset. 
+									Though it is able to achieve the best accuracy and loss of our tested models, our results are still far from ideal.
+									Further analysis of the model's ability to handle our data can be done by looking at the precision and recall
+									of each individual label in the validation set, as well as the confusion matrix:</p>
+									<h5>ResNet50 Label Metrics:</h5>
+									<div class="table-wrapper">
+										<table class="alt">
+											<thead>
+												<tr>
+													<th>Genre</th>
+													<th>Precision</th>
+													<th>Recall</th>
+												</tr>
+											</thead>
+											<tbody>
+												<tr>
+													<td>Action_Adventure</td>
+													<td>0.4770</td>
+													<td>0.4806</td>
+												</tr>
+												<tr>
+													<td>Animation</td>
+													<td>0.6338</td>
+													<td>0.7575</td>
+												</tr>
+												<tr>
+													<td>Comedy</td>
+													<td>0.5452</td>
+													<td>0.5779</td>
+												</tr>
+												<tr>
+													<td>Crime_Mystery</td>
+													<td>0.3600</td>
+													<td>0.2595</td>
+												</tr>
+												<tr>
+													<td>Documentary</td>
+													<td>0.3826</td>
+													<td>0.3932</td>
+												</tr>
+												<tr>
+													<td>Drama</td>
+													<td>0.3829</td>
+													<td>0.3983</td>
+												</tr>
+												<tr>
+													<td>Drama, Family_TV Movie</td>
+													<td>0.4056</td>
+													<td>0.3385</td>
+												</tr>
+												<tr>
+													<td>Fantasy_Science Fiction</td>
+													<td>0.3449</td>
+													<td>0.3024</td>
+												</tr>
+												<tr>
+													<td>History_War_Western</td>
+													<td>0.5872</td>
+													<td>0.6210</td>
+												</tr>
+												<tr>
+													<td>Horror</td>
+													<td>0.5122</td>
+													<td>0.6172</td>
+												</tr>
+												<tr>
+													<td>Music</td>
+													<td>0.5242</td>
+													<td>0.5418</td>
+												</tr>
+												<tr>
+													<td>Romance</td>
+													<td>0.5040</td>
+													<td>0.5497</td>
+												</tr>
+												<tr>
+													<td>Thriller</td>
+													<td>0.3359</td>
+													<td>0.2792</td>
+												</tr>
+											</tbody>
+										</table>
+										<span class="image fit"><img src="images/resnet_cf.png" alt="" /></span>	
+										<p>Aside from the standout of Animation, we seem to be underfitting in all categories. A quick look at some of the 
+											mislabelled movies shows that some posters can be quite ambiguous:</p>
+										<span class="image fit"><img src="images/resnet_misses1.png" alt="" /></span>
+										<article>
+											<a href="#" class="image right"><img src="images/resnet_misses2.png" alt="" /></a>
+											<div class="inner">
+												<p>While others can be attributed to the limitations of the dataset. On further analysis of this film, we found that 
+													it should have been labelled a combination of Comedy and Horror, but TMDB shows only Comedy. Overall, this shows
+													the importance of the use of multi-modal architecture for cases where label boundaries are not distinct, as the 
+													additional context provided from a plot overview could dramatically improve our predictive cababilities. Also, 
+													it shows the importance of a robust dataset with well-vetted labels.
+												</p>
+												</div>
+										</article>
+										
+									</div>
+							</div>
+
+						</section>
+
+						<!-- Four -->
+							<section id="four">
+								<div class="container">
+									<h3>Discussion</h3>
+									<p>At this stage, training Resnet50 with pretrained ImageNet1k weights on our dataset yields a %47.76 test accuracy with 1.6091 loss. 
+										Working through this project, we gained experience in the use of APIs, web scraping, dataset maintenance and analysis and learned 
+										that the simplest and safest strategy to prevent overfitting is to collect more data from underrrepresented labels. Additionally,
+										we experimented with model training, regularization and learning rate scheduling, and transfer learning, and found that the newest 
+										and biggest model is not always the best for any given dataset. Our next steps would be to cross-reference our TMDB genre data with 
+										genre data from another site, such as IMDB, to ensure accuracy or our labels. Additionally, we plan to treat this problem as multilabel, 
+										using binary cross entropy loss, rather than as multiclass. Initial experimentation showed a validation accuracy of 80% after just 3 epochs,
+									 	but analysis showed that this measurement was not reflected in the predictions:</p>
+										<span class="image fit"><img src="images/multilabel predictions.png" alt="" /></span>
+										<p>Further research into prediction thresholds, suitable multilabel metrics, and techniques for sampling well-balanced train and test sets from 
+											heavily imbalanced and overlapping multilabel data will be required before this method could prove viable.</p>
+								</div>
+							</section>
+
+							<!-- Five -->
+							<section id="five">
+								<div class="container">
+									<h3>Citations and Acknowledgments</h3>
+									<p>[1] 	https://www.themoviedb.org</p>
+									<p>[2] 	Asaniczka. (2024). TMDB_movie_dataset_v11. https://www.kaggle.com/datasets/asaniczka/tmdb-movies-dataset-2023-930k-movies</p>
+									<p>[3]	Simonyan, K., Zisserman, A. Very Deep Convolutional Networks For Large-Scale Image Recognition. ICLR, 2015</p>
+									<p>[4]	Tan, M., V. Le, Q. EfficientNet: Rethinking Model Scaling for Convolutional Neural Networks. ICML, 2019</p>
+									<p>[5]	He, K., Zhang, X., Ren, S., Sun, J.  Deep Residual Learning for Image Recognition. arXiv:1512.03385, 2015</p>
+									<p>[6]	Dosovitskiy, A., Beyer, L., Kolesnikov, A., Weissenborn, D., Zhai, X., Unterthiner, T., Dehghani, M., Minderer, M., Heigold, G., Gelly, S., Uszkoreit, J., Houlsby, N. An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale. arXiv:2010.11929, 2020</p>
+								</div>
+							</section>
+
+						<!-- Six -->
+						<!-- 
+							<section id="six">
+								<div class="container">
+									<h3>Elements</h3>
+
+									<section>
+										<h4>Text</h4>
+										<p>This is <b>bold</b> and this is <strong>strong</strong>. This is <i>italic</i> and this is <em>emphasized</em>.
+										This is <sup>superscript</sup> text and this is <sub>subscript</sub> text.
+										This is <u>underlined</u> and this is code: <code>for (;;) { ... }</code>. Finally, <a href="#">this is a link</a>.</p>
+										<hr />
+										<header>
+											<h4>Heading with a Subtitle</h4>
+											<p>Lorem ipsum dolor sit amet nullam id egestas urna aliquam</p>
+										</header>
+										<p>Nunc lacinia ante nunc ac lobortis. Interdum adipiscing gravida odio porttitor sem non mi integer non faucibus ornare mi ut ante amet placerat aliquet. Volutpat eu sed ante lacinia sapien lorem accumsan varius montes viverra nibh in adipiscing blandit tempus accumsan.</p>
+										<header>
+											<h5>Heading with a Subtitle</h5>
+											<p>Lorem ipsum dolor sit amet nullam id egestas urna aliquam</p>
+										</header>
+										<p>Nunc lacinia ante nunc ac lobortis. Interdum adipiscing gravida odio porttitor sem non mi integer non faucibus ornare mi ut ante amet placerat aliquet. Volutpat eu sed ante lacinia sapien lorem accumsan varius montes viverra nibh in adipiscing blandit tempus accumsan.</p>
+										<hr />
+										<h2>Heading Level 2</h2>
+										<h3>Heading Level 3</h3>
+										<h4>Heading Level 4</h4>
+										<h5>Heading Level 5</h5>
+										<h6>Heading Level 6</h6>
+										<hr />
+										<h5>Blockquote</h5>
+										<blockquote>Fringilla nisl. Donec accumsan interdum nisi, quis tincidunt felis sagittis eget tempus euismod. Vestibulum ante ipsum primis in faucibus vestibulum. Blandit adipiscing eu felis iaculis volutpat ac adipiscing accumsan faucibus. Vestibulum ante ipsum primis in faucibus lorem ipsum dolor sit amet nullam adipiscing eu felis.</blockquote>
+										<h5>Preformatted</h5>
+										<pre><code>i = 0;
+
+while (!deck.isInOrder()) {
+    print 'Iteration ' + i;
+    deck.shuffle();
+    i++;
+}
+
+print 'It took ' + i + ' iterations to sort the deck.';</code></pre>
+									</section>
+
+									<section>
+										<h4>Lists</h4>
+										<div class="row">
+											<div class="col-6 col-12-xsmall">
+												<h5>Unordered</h5>
+												<ul>
+													<li>Dolor pulvinar etiam magna etiam.</li>
+													<li>Sagittis adipiscing lorem eleifend.</li>
+													<li>Felis enim feugiat dolore viverra.</li>
+												</ul>
+												<h5>Alternate</h5>
+												<ul class="alt">
+													<li>Dolor pulvinar etiam magna etiam.</li>
+													<li>Sagittis adipiscing lorem eleifend.</li>
+													<li>Felis enim feugiat dolore viverra.</li>
+												</ul>
+											</div>
+											<div class="col-6 col-12-xsmall">
+												<h5>Ordered</h5>
+												<ol>
+													<li>Dolor pulvinar etiam magna etiam.</li>
+													<li>Etiam vel felis at lorem sed viverra.</li>
+													<li>Felis enim feugiat dolore viverra.</li>
+													<li>Dolor pulvinar etiam magna etiam.</li>
+													<li>Etiam vel felis at lorem sed viverra.</li>
+													<li>Felis enim feugiat dolore viverra.</li>
+												</ol>
+												<h5>Icons</h5>
+												<ul class="icons">
+													<li><a href="#" class="icon brands fa-twitter"><span class="label">Twitter</span></a></li>
+													<li><a href="#" class="icon brands fa-facebook-f"><span class="label">Facebook</span></a></li>
+													<li><a href="#" class="icon brands fa-instagram"><span class="label">Instagram</span></a></li>
+													<li><a href="#" class="icon brands fa-github"><span class="label">Github</span></a></li>
+													<li><a href="#" class="icon brands fa-dribbble"><span class="label">Dribbble</span></a></li>
+													<li><a href="#" class="icon brands fa-tumblr"><span class="label">Tumblr</span></a></li>
+												</ul>
+											</div>
+										</div>
+										<h5>Actions</h5>
+										<ul class="actions">
+											<li><a href="#" class="button primary">Default</a></li>
+											<li><a href="#" class="button">Default</a></li>
+											<li><a href="#" class="button alt">Default</a></li>
+										</ul>
+										<ul class="actions small">
+											<li><a href="#" class="button primary small">Small</a></li>
+											<li><a href="#" class="button small">Small</a></li>
+											<li><a href="#" class="button alt small">Small</a></li>
+										</ul>
+										<div class="row">
+											<div class="col-3 col-6-medium col-12-xsmall">
+												<ul class="actions stacked">
+													<li><a href="#" class="button primary">Default</a></li>
+													<li><a href="#" class="button">Default</a></li>
+													<li><a href="#" class="button alt">Default</a></li>
+												</ul>
+											</div>
+											<div class="col-3 col-6 col-12-xsmall">
+												<ul class="actions stacked">
+													<li><a href="#" class="button primary small">Small</a></li>
+													<li><a href="#" class="button small">Small</a></li>
+													<li><a href="#" class="button alt small">Small</a></li>
+												</ul>
+											</div>
+											<div class="col-3 col-6-medium col-12-xsmall">
+												<ul class="actions stacked">
+													<li><a href="#" class="button primary fit">Default</a></li>
+													<li><a href="#" class="button fit">Default</a></li>
+													<li><a href="#" class="button alt fit">Default</a></li>
+												</ul>
+											</div>
+											<div class="col-3 col-6-medium col-12-xsmall">
+												<ul class="actions stacked">
+													<li><a href="#" class="button primary small fit">Small</a></li>
+													<li><a href="#" class="button small fit">Small</a></li>
+													<li><a href="#" class="button alt small fit">Small</a></li>
+												</ul>
+											</div>
+										</div>
+									</section>
+
+									<section>
+										<h4>Table</h4>
+										<h5>Default</h5>
+										<div class="table-wrapper">
+											<table>
+												<thead>
+													<tr>
+														<th>Name</th>
+														<th>Description</th>
+														<th>Price</th>
+													</tr>
+												</thead>
+												<tbody>
+													<tr>
+														<td>Item One</td>
+														<td>Ante turpis integer aliquet porttitor.</td>
+														<td>29.99</td>
+													</tr>
+													<tr>
+														<td>Item Two</td>
+														<td>Vis ac commodo adipiscing arcu aliquet.</td>
+														<td>19.99</td>
+													</tr>
+													<tr>
+														<td>Item Three</td>
+														<td> Morbi faucibus arcu accumsan lorem.</td>
+														<td>29.99</td>
+													</tr>
+													<tr>
+														<td>Item Four</td>
+														<td>Vitae integer tempus condimentum.</td>
+														<td>19.99</td>
+													</tr>
+													<tr>
+														<td>Item Five</td>
+														<td>Ante turpis integer aliquet porttitor.</td>
+														<td>29.99</td>
+													</tr>
+												</tbody>
+												<tfoot>
+													<tr>
+														<td colspan="2"></td>
+														<td>100.00</td>
+													</tr>
+												</tfoot>
+											</table>
+										</div>
+
+										<h5>Alternate</h5>
+										<div class="table-wrapper">
+											<table class="alt">
+												<thead>
+													<tr>
+														<th>Name</th>
+														<th>Description</th>
+														<th>Price</th>
+													</tr>
+												</thead>
+												<tbody>
+													<tr>
+														<td>Item One</td>
+														<td>Ante turpis integer aliquet porttitor.</td>
+														<td>29.99</td>
+													</tr>
+													<tr>
+														<td>Item Two</td>
+														<td>Vis ac commodo adipiscing arcu aliquet.</td>
+														<td>19.99</td>
+													</tr>
+													<tr>
+														<td>Item Three</td>
+														<td> Morbi faucibus arcu accumsan lorem.</td>
+														<td>29.99</td>
+													</tr>
+													<tr>
+														<td>Item Four</td>
+														<td>Vitae integer tempus condimentum.</td>
+														<td>19.99</td>
+													</tr>
+													<tr>
+														<td>Item Five</td>
+														<td>Ante turpis integer aliquet porttitor.</td>
+														<td>29.99</td>
+													</tr>
+												</tbody>
+												<tfoot>
+													<tr>
+														<td colspan="2"></td>
+														<td>100.00</td>
+													</tr>
+												</tfoot>
+											</table>
+										</div>
+									</section>
+
+									<section>
+										<h4>Buttons</h4>
+										<ul class="actions">
+											<li><a href="#" class="button primary">Primary</a></li>
+											<li><a href="#" class="button">Default</a></li>
+											<li><a href="#" class="button alt">Alternate</a></li>
+										</ul>
+										<ul class="actions">
+											<li><a href="#" class="button primary large">Large</a></li>
+											<li><a href="#" class="button">Default</a></li>
+											<li><a href="#" class="button alt small">Small</a></li>
+										</ul>
+										<ul class="actions fit">
+											<li><a href="#" class="button primary fit">Fit</a></li>
+											<li><a href="#" class="button fit">Fit</a></li>
+											<li><a href="#" class="button alt fit">Fit</a></li>
+										</ul>
+										<ul class="actions fit small">
+											<li><a href="#" class="button primary fit small">Fit + Small</a></li>
+											<li><a href="#" class="button fit small">Fit + Small</a></li>
+											<li><a href="#" class="button alt fit small">Fit + Small</a></li>
+										</ul>
+										<ul class="actions">
+											<li><a href="#" class="button primary icon solid fa-download">Icon</a></li>
+											<li><a href="#" class="button icon solid fa-download">Icon</a></li>
+											<li><a href="#" class="button alt icon solid fa-check">Icon</a></li>
+										</ul>
+										<ul class="actions">
+											<li><span class="button primary disabled">Primary</span></li>
+											<li><span class="button disabled">Default</span></li>
+											<li><span class="button alt disabled">Alternate</span></li>
+										</ul>
+									</section>
+
+									<section>
+										<h4>Form</h4>
+										<form method="post" action="#">
+											<div class="row gtr-uniform">
+												<div class="col-6 col-12-xsmall">
+													<input type="text" name="demo-name" id="demo-name" value="" placeholder="Name" />
+												</div>
+												<div class="col-6 col-12-xsmall">
+													<input type="email" name="demo-email" id="demo-email" value="" placeholder="Email" />
+												</div>
+												<div class="col-12">
+													<select name="demo-category" id="demo-category">
+														<option value="">- Category -</option>
+														<option value="1">Manufacturing</option>
+														<option value="1">Shipping</option>
+														<option value="1">Administration</option>
+														<option value="1">Human Resources</option>
+													</select>
+												</div>
+												<div class="col-4 col-12-medium">
+													<input type="radio" id="demo-priority-low" name="demo-priority" checked>
+													<label for="demo-priority-low">Low Priority</label>
+												</div>
+												<div class="col-4 col-12-medium">
+													<input type="radio" id="demo-priority-normal" name="demo-priority">
+													<label for="demo-priority-normal">Normal Priority</label>
+												</div>
+												<div class="col-4 col-12-medium">
+													<input type="radio" id="demo-priority-high" name="demo-priority">
+													<label for="demo-priority-high">High Priority</label>
+												</div>
+												<div class="col-6 col-12-medium">
+													<input type="checkbox" id="demo-copy" name="demo-copy">
+													<label for="demo-copy">Email me a copy of this message</label>
+												</div>
+												<div class="col-6 col-12-medium">
+													<input type="checkbox" id="demo-human" name="demo-human" checked>
+													<label for="demo-human">I am a human and not a robot</label>
+												</div>
+												<div class="col-12">
+													<textarea name="demo-message" id="demo-message" placeholder="Enter your message" rows="6"></textarea>
+												</div>
+												<div class="col-12">
+													<ul class="actions">
+														<li><input type="submit" value="Send Message" /></li>
+														<li><input type="reset" value="Reset" class="alt" /></li>
+													</ul>
+												</div>
+											</div>
+										</form>
+									</section>
+
+									<section>
+										<h4>Image</h4>
+										<h5>Fit</h5>
+										<span class="image fit"><img src="images/banner.jpg" alt="" /></span>
+										<div class="box alt">
+											<div class="row gtr-50 gtr-uniform">
+												<div class="col-4"><span class="image fit"><img src="images/pic01.jpg" alt="" /></span></div>
+												<div class="col-4"><span class="image fit"><img src="images/pic02.jpg" alt="" /></span></div>
+												<div class="col-4"><span class="image fit"><img src="images/pic03.jpg" alt="" /></span></div>
+												<div class="col-4"><span class="image fit"><img src="images/pic02.jpg" alt="" /></span></div>
+												<div class="col-4"><span class="image fit"><img src="images/pic03.jpg" alt="" /></span></div>
+												<div class="col-4"><span class="image fit"><img src="images/pic01.jpg" alt="" /></span></div>
+												<div class="col-4"><span class="image fit"><img src="images/pic03.jpg" alt="" /></span></div>
+												<div class="col-4"><span class="image fit"><img src="images/pic01.jpg" alt="" /></span></div>
+												<div class="col-4"><span class="image fit"><img src="images/pic02.jpg" alt="" /></span></div>
+											</div>
+										</div>
+										<h5>Left &amp; Right</h5>
+										<p><span class="image left"><img src="images/avatar.jpg" alt="" /></span>Fringilla nisl. Donec accumsan interdum nisi, quis tincidunt felis sagittis eget. tempus euismod. Vestibulum ante ipsum primis in faucibus vestibulum. Blandit adipiscing eu felis iaculis volutpat ac adipiscing accumsan eu faucibus. Integer ac pellentesque praesent tincidunt felis sagittis eget. tempus euismod. Vestibulum ante ipsum primis in faucibus vestibulum. Blandit adipiscing eu felis iaculis volutpat ac adipiscing accumsan eu faucibus. Integer ac pellentesque praesent. Donec accumsan interdum nisi, quis tincidunt felis sagittis eget. tempus euismod. Vestibulum ante ipsum primis in faucibus vestibulum. Blandit adipiscing eu felis iaculis volutpat ac adipiscing accumsan eu faucibus. Integer ac pellentesque praesent tincidunt felis sagittis eget. tempus euismod. Vestibulum ante ipsum primis in faucibus vestibulum. Blandit adipiscing eu felis iaculis volutpat ac adipiscing accumsan eu faucibus. Integer ac pellentesque praesent.</p>
+										<p><span class="image right"><img src="images/avatar.jpg" alt="" /></span>Fringilla nisl. Donec accumsan interdum nisi, quis tincidunt felis sagittis eget. tempus euismod. Vestibulum ante ipsum primis in faucibus vestibulum. Blandit adipiscing eu felis iaculis volutpat ac adipiscing accumsan eu faucibus. Integer ac pellentesque praesent tincidunt felis sagittis eget. tempus euismod. Vestibulum ante ipsum primis in faucibus vestibulum. Blandit adipiscing eu felis iaculis volutpat ac adipiscing accumsan eu faucibus. Integer ac pellentesque praesent. Donec accumsan interdum nisi, quis tincidunt felis sagittis eget. tempus euismod. Vestibulum ante ipsum primis in faucibus vestibulum. Blandit adipiscing eu felis iaculis volutpat ac adipiscing accumsan eu faucibus. Integer ac pellentesque praesent tincidunt felis sagittis eget. tempus euismod. Vestibulum ante ipsum primis in faucibus vestibulum. Blandit adipiscing eu felis iaculis volutpat ac adipiscing accumsan eu faucibus. Integer ac pellentesque praesent.</p>
+									</section>
+
+								</div>
+							</section>
+						-->
+
+					</div>
+
+				<!-- Footer -->
+					<section id="footer">
+						<div class="container">
+							<ul class="copyright">
+								<li>&copy; Untitled. All rights reserved.</li><li>Design: <a href="http://html5up.net">HTML5 UP</a></li>
+							</ul>
+						</div>
+					</section>
+
+			</div>
+
+		<!-- Scripts -->
+			<script src="assets/js/jquery.min.js"></script>
+			<script src="assets/js/jquery.scrollex.min.js"></script>
+			<script src="assets/js/jquery.scrolly.min.js"></script>
+			<script src="assets/js/browser.min.js"></script>
+			<script src="assets/js/breakpoints.min.js"></script>
+			<script src="assets/js/util.js"></script>
+			<script src="assets/js/main.js"></script>
+
+	</body>
+</html>
