@@ -26,8 +26,12 @@
 						<li><a href="#one" class="active">Problem Statement</a></li>
 						<li><a href="#two">Data Preprocessing</a></li>
 						<li><a href="#three">Image Model</a></li>
-						<li><a href="#four">Discussion</a></li>
-						<li><a href="#five">Citations</a></li>
+						<li><a href="#four">Image Model Discussion</a></li>
+						<li><a href="#five">Text Model</a></li>
+						<li><a href="#six">Text Model Discussion</a></li>
+						<li><a href="#seven">Fusion Model</a></li>
+						<li><a href="#eight">Fusion Model Discussion</a></li>
+						<li><a href="#nine">Citations</a></li>
 					</ul>
 				</nav>
 				<footer>
@@ -76,13 +80,13 @@
 								<div class="container">
 									<h3>Data Preprocessing</h3>
 									<h5>Data Lead: Max Pierson</h5>
-										<p>Our overall strategy for dataset creation was to collect as much data as possible. Once completed, the highest occuring multigenre combinations were 
+										<p>My overall strategy for dataset creation was to collect as much data as possible. Once completed, the highest occuring multigenre combinations were 
 											 to be used in our datasets. We also utilized undersampling among these chosen classes to create a balanced final dataset.
 											Several different datasets were created and tested throughout this project, however, collection of the data for all sets followed the same basic plan:</p>
 									<div class="col-6 col-12-xsmall">
 										<ol>
 											<li> Movie Data Collection <br>
-											</li>Using the TMDB API with the tmdbsimple wrapper, we searched movies by id and collected the following into a csv file:
+											</li>Using the TMDB API with the tmdbsimple wrapper, I searched movies by id and collected the following into a csv file:
 											<br>
 											<div class="features">
 												<article>
@@ -113,7 +117,7 @@
 									</div>
 									<span class="image fit"><img src="images/Data workflow-1.jpg" alt="" /></span>
 									<h4>ID Selection</h4>
-									<p>Our strategy for ID data was to collect as many data points as possible to generate more instances of the rarer genres, allowing us to undersample the more strongly represented genres and still have a large final dataset. To this end, TMDB IDs were collected using the following three methods:</p>
+									<p>My strategy for ID data was to collect as many data points as possible to generate more instances of the rarer genres, allowing us to undersample the more strongly represented genres and still have a large final dataset. To this end, TMDB IDs were collected using the following three methods:</p>
 										<div class="features">
 											<article>
 												<a href="#" class="image"><img src="images/TMDB_rand_ID.png" alt="" /></a>
@@ -124,7 +128,7 @@
 										<div class="features">
 											<article>
 												<a href="#" class="image"><img src="images/TMDB_genre.png" alt="" /></a>
-												<div class="inner">1. TMDB_rand_ID
+												<div class="inner">2. TMDB_rand_ID
 												<p>IDs collected using Genre request inside tmdbsimple, which provides a list of up to 500 pages worth of movies belonging to each genre requested. This yielded 117,370 movies after cleaning, and a much better representation of the rarer genres. However, to ensure the robustness of our dataset, we added a third set:
 												</p>
 												</div>
@@ -132,20 +136,20 @@
 										<div class="features">
 											<article>
 												<a href="#" class="image"><img src="images/TMDB_v11.png" alt="" /></a>
-												<div class="inner">1. TMDB_v11
-												<p>IDs were collected from the Kaggle database 'TMDB_movie_dataset_v11.csv' which offers data on over 1 million movies. After, cleaning, we were left with 361,940 movies.
+												<div class="inner">3. TMDB_v11
+												<p>IDs were collected from the Kaggle database 'TMDB_movie_dataset_v11.csv' which offers data on over 1 million movies. After, cleaning, I was left with 361,940 movies.
 												</p>
 												</div>
 										</div>
 										<h4>Podge</h4>
-										<p>We then combined these three datasets, removing any duplicate IDs. During this process, it was also noted that some movies in the database were duplicates with different IDs. 
+										<p>I then combined these three datasets, removing any duplicate IDs. During this process, it was also noted that some movies in the database were duplicates with different IDs. 
 										Though some movies shared the same title but were not duplicates, it was decided the safest measure to take would be to remove any duplicate titles in the new set. 
-										This process resulted in the podge dataset, which contains data on 346,934 unique movies.</p>
+										This process resulted in the podge dataset, named for its origin as a hodgepodge of different datasets, which contains data on 346,934 unique movies.</p>
 									<span class="image fit"><img src="images/Podge.png" alt="" /></span>
-									<p>As seen above, there still remains a significant imbalance in genre representation. We further reduced this dataset to movies containing 1 to 3 labels and, in order to 
-										address the imbalance, we grouped related genres together. The result is podge_combi_3g, a set which contains 333,783 movies belonging to 366 different genre combinations. 
+									<p>As seen above, there still remains a significant imbalance in genre representation. I further reduced this dataset to movies containing 1 to 3 labels and, in order to 
+										address the imbalance, I grouped related genres together. The result is podge_combi_3g, a set which contains 333,783 movies belonging to 366 different genre combinations. 
 										Of these genre combinations, 39 have over 2,000 instances, and each single-genre  label has over 3,000 instances. By undersampling all of these labels down to these limits, 
-										we developed two multiclass datasets: one multigenre and one single-genre.</p>
+										I developed two multiclass datasets: one multigenre and one single-genre.</p>
 									<span class="image fit"><img src="images/Podge_combi.png" alt="" /></span>
 										<div class="features">
 												<span class="image fit"><img src="images/Podge_3g_combi_2000.png" alt="" /></span>
@@ -174,10 +178,10 @@
 							<div class="container">
 								<h3>Image Model</h3>
 								<h5>Image Model Lead: Max Pierson</h5>
-								<p>For this project we experimented with transfer learning on several architectures, using the pretrained weights from ImageNet1k. 
+								<p>For this project I experimented with transfer learning on several architectures, using the pretrained weights from ImageNet1k. 
 									The only changes made to these architectures was the output shape to fit our dataset, as well as the altering of dropout layers
 									to a value of p=0.5 at most. After some experimentation, it was determined that best performance is given when training all layers 
-									without any freezing. Using this strategy, we experimented on Podge_1g_combi_3000 with the following model architectures:</p>
+									without any freezing. Using this strategy, I experimented on Podge_1g_combi_3000 with the following model architectures:</p>
 								<h5>VGG</h5>
 								<p>VGG was designed as an experiment to increase depth of a CNN. A CNN uses convolutional layers to apply filters to an 
 									input image in order to extract important features, similar to edge and shape detection. It utilizes a standard CNN 
@@ -199,9 +203,9 @@
 									to be successful with very large datasets (well over 10 million images) but is not expected to outperform CNN architectures for a dataset of our size. </p>
 								
 								<h4>Image Transforms</h4>
-								<p>In order to reduce chances of overfitting, we employed several transforms to alter the incoming training data. To alter alignment we use RandomResizedCrop 
-									followed by RandomHorizontalFlip. For coloring we use ColorJitter and RandomGreyscale. After some experimentation, we noted some benefit from the addition 
-									of TrivialAugmentWide. We finally convert to a tensor and normalize, performing an inline calculation of the mean and standard deviation based on 
+								<p>In order to reduce chances of overfitting, I employed several transforms to alter the incoming training data. To alter alignment I use RandomResizedCrop 
+									followed by RandomHorizontalFlip. For coloring I use ColorJitter and RandomGreyscale. After some experimentation, I noted some benefit from the addition 
+									of TrivialAugmentWide. Finally, the image is converted to a tensor and normalized, performing an inline calculation of the mean and standard deviation based on 
 									the desired image and batch sizes. </p>
 								<h3>Experimentation & Results</h3>
 								<h4>Baseline: VGG19</h4>
@@ -219,7 +223,10 @@
 								</ul>
 								<span class="image fit"><img src="images/vgg.png" alt="" /></span>
 								<span class="image fit"><img src="images/vgg_preds1.png" alt="" /></span>
-								
+								<p>As seen above, preventing overfitting on VGG required regularization in the form of weight decay, which resulted in an unappealing loss curve. 
+									However, these results still show an ability to generalize with up to around 44% accuracy.
+									Tests with my subsequent model choices initially utilized the same training settings as VGG19's, 
+									and were then iteratively altered to find the best results for each model.</p>
 								<h4>EfficientNet_B0</h4>
 								<ul>
 									<li>SGD with momentum = 0, weight decay = 0</li>
@@ -236,7 +243,10 @@
 								<span class="image fit"><img src="images/effnet_b0_v2.png" alt="" /></span>
 								<span class="image fit"><img src="images/effnet_b0_preds1.png" alt="" /></span>
 								<span class="image fit"><img src="images/effnet_b0_preds2.png" alt="" /></span>
-
+								<p>EfficientNet_b0's training yielded a much smoother loss curve and slightly better results with a final accuracy of 46%.
+									Looking at some of the mislabelled posters shows several occurrences where the predicted label is understandable, for instance 
+									a Sherlock Holmes movie should have been classified a Mystery, but the poster depicts a man in a historical setting.
+								</p>
 								<h4>ResNet50</h4>
 								<ul>
 									<li>SGD with momentum = 0, weight decay = 0</li>
@@ -253,7 +263,9 @@
 								<span class="image fit"><img src="images/resnet.png" alt="" /></span>
 								<span class="image fit"><img src="images/resnet_50_preds1.png" alt="" /></span>
 								<span class="image fit"><img src="images/resnet_50_preds2.png" alt="" /></span>
-
+								<p>Resnet50 shows improvement from efficiennet, but once again we see mislabelling from ambiguous, 
+									and potentially mislabelled, data. This will be discussed further at the end of this section.
+								</p>
 								<h4>ViT_B_32</h4>
 								<ul>
 									<li>AdamW with weight decay = 0.2</li>
@@ -270,9 +282,13 @@
 								<span class="image fit"><img src="images/vit.png" alt="" /></span>
 								<span class="image fit"><img src="images/Vit_preds1.png" alt="" /></span>
 								<span class="image fit"><img src="images/Vit_preds2.png" alt="" /></span>
-								
+								<p>My testing with ViT_B_32 required significant alterations to the optimizer settings to prevent
+									overfitting, and was unable to improve upon resnet's loss and accuracy. This aligns with my 
+									previous hypothesis that a visual transformer would be limited by our relatively small dataset 
+									compared to its normal use cases.
+								</p>
 								<h4>Further Analysis</h4>
-								<p>At this stage we have determined that ResNet is the best model to fit our current dataset. 
+								<p>At this stage I have determined that ResNet is the best model to fit our current dataset. 
 									Though it is able to achieve the best accuracy and loss of our tested models, our results are still far from ideal.
 									Further analysis of the model's ability to handle our data can be done by looking at the precision and recall
 									of each individual label in the validation set, as well as the confusion matrix:</p>
@@ -355,13 +371,13 @@
 											</tbody>
 										</table>
 										<span class="image fit"><img src="images/resnet_cf.png" alt="" /></span>	
-										<p>Aside from the standout of Animation, we seem to be underfitting in all categories. A quick look at some of the 
+										<p>Aside from the standout of Animation, the model seems to be underfitting in all categories. A quick look at some of the 
 											mislabelled movies shows that some posters can be quite ambiguous:</p>
 										<span class="image fit"><img src="images/resnet_misses1.png" alt="" /></span>
 										<article>
 											<a href="#" class="image right"><img src="images/resnet_misses2.png" alt="" /></a>
 											<div class="inner">
-												<p>While others can be attributed to the limitations of the dataset. On further analysis of this film, we found that 
+												<p>While others can be attributed to the limitations of the dataset. On further analysis of this film, I found that 
 													it should have been labelled a combination of Comedy and Horror, but TMDB shows only Comedy. Overall, this shows
 													the importance of the use of multi-modal architecture for cases where label boundaries are not distinct, as the 
 													additional context provided from a plot overview could dramatically improve our predictive cababilities. Also, 
@@ -378,11 +394,11 @@
 						<!-- Four -->
 							<section id="four">
 								<div class="container">
-									<h3>Discussion</h3>
+									<h3>Image Model Discussion</h3>
 									<p>At this stage, training Resnet50 with pretrained ImageNet1k weights on our dataset yields a 47.76% test accuracy with 1.6091 loss. 
-										Working through this project, we gained experience in the use of APIs, web scraping, dataset maintenance and analysis, and learned 
+										Working through this project, I gained experience in the use of APIs, web scraping, dataset maintenance and analysis, and learned 
 										that the simplest and safest strategy to prevent overfitting is to collect more data from underrrepresented labels. Additionally,
-										we experimented with model training, regularization and learning rate scheduling, and transfer learning, and found that the newest 
+										I experimented with model training, regularization, learning rate scheduling, and transfer learning, and found that the newest 
 										and biggest model is not always the best for any given dataset. Our next steps would be to cross-reference our TMDB genre data with 
 										genre data from another site, such as IMDB, to ensure accuracy of our labels. Additionally, future attempts would explore treating 
 										this problem as multilabel, using binary cross entropy loss, rather than as multiclass. Initial experimentation showed a validation 
@@ -393,10 +409,49 @@
 								</div>
 							</section>
 
-							<!-- Five -->
+						<!-- Five -->
 							<section id="five">
 								<div class="container">
+									<h3>Text Model Stuff</h3>
+									<p>Words about Text model stuff</p>
+									<span class="image fit"><img src="images/resnet_misses2.png" alt="" /></span>
+								</div>
+							</section>
+						
+						<!-- Six -->
+							<section id="six">
+								<div class="container">
+									<h3>Text Model Discussion</h3>
+									<p>Words about Text model Discussion stuff</p>
+									<span class="image fit"><img src="images/resnet_misses2.png" alt="" /></span>
+								</div>
+							</section>
+						
+						<!-- Seven -->
+							<section id="seven">
+								<div class="container">
+									<h3>Fusion Model Stuff</h3>
+									<p>Words about Fusion model stuff</p>
+									<span class="image fit"><img src="images/resnet_misses2.png" alt="" /></span>
+								</div>
+							</section>
+						
+						<!-- Eight -->
+							<section id="eight">
+								<div class="container">
+									<h3>Fusion Model Discussion</h3>
+									<p>Words about Fusion model Discussion stuff</p>
+									<span class="image fit"><img src="images/resnet_misses2.png" alt="" /></span>
+								</div>
+							</section>
+
+						<!-- Nine -->
+							<section id="nine">
+								<div class="container">
 									<h3>Citations and Acknowledgments</h3>
+									<article>
+										<a href="#" class="image"><img src="images/TMDB_logo.png" alt="" /></a>
+									</article>
 									<p>[1] 	https://www.themoviedb.org</p>
 									<p>[2] 	Asaniczka. (2024). TMDB_movie_dataset_v11. https://www.kaggle.com/datasets/asaniczka/tmdb-movies-dataset-2023-930k-movies</p>
 									<p>[3]	Simonyan, K., Zisserman, A. Very Deep Convolutional Networks For Large-Scale Image Recognition. ICLR, 2015</p>
@@ -405,7 +460,6 @@
 									<p>[6]	Dosovitskiy, A., Beyer, L., Kolesnikov, A., Weissenborn, D., Zhai, X., Unterthiner, T., Dehghani, M., Minderer, M., Heigold, G., Gelly, S., Uszkoreit, J., Houlsby, N. An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale. arXiv:2010.11929, 2020</p>
 								</div>
 							</section>
-
 						<!-- Six -->
 						<!-- 
 							<section id="six">
