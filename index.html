@@ -28,9 +28,7 @@
 						<li><a href="#three">Image Model</a></li>
 						<li><a href="#four">Image Model Discussion</a></li>
 						<li><a href="#five">Text Model</a></li>
-						<li><a href="#six">Text Model Discussion</a></li>
 						<li><a href="#seven">Fusion Model</a></li>
-						<li><a href="#eight">Fusion Model Discussion</a></li>
 						<li><a href="#nine">Citations</a></li>
 					</ul>
 				</nav>
@@ -410,40 +408,181 @@
 							</section>
 
 						<!-- Five -->
-							<section id="five">
-								<div class="container">
-									<h3>Text Model Stuff</h3>
-									<p>Words about Text model stuff</p>
-									<span class="image fit"><img src="images/resnet_misses2.png" alt="" /></span>
-								</div>
-							</section>
+						<section id="five">
+							<div class="container">
+								<h3>Text Model</h3>
+								<p>
+									This implementation develops a multi-label movie genre classification model using a Bidirectional Long Short-Term Memory (BiLSTM) neural network to predict multiple genres from movie plots, leveraging a dataset of 62,957 movies from the Movie dataset. Below is a detailed documentation of every step I performed, organized into paragraphs to clearly outline the process, its purpose, and outcomes.<br><br>
+									
+									<strong>Environment Setup:</strong> I began by configuring the Python environment to support the diverse requirements of the project. I imported essential libraries: pandas and NumPy for data manipulation, NLTK for text preprocessing, scikit-learn for data splitting and evaluation metrics, PyTorch for building and training the BiLSTM model, Gensim for Word2Vec embeddings, and Matplotlib with Seaborn for visualization. I downloaded NLTK’s (for word tokenization) and stopwords (for removing common English words) resources, caching them to avoid redundant downloads. To ensure reproducibility, I set random seeds to 42 for both PyTorch and NumPy, guaranteeing consistent data splits and model initialization. I configured the system to use a GPU cuda if available. <br><br>
+									
+									<strong>Data Loading and Initial Exploration:</strong> I loaded the dataset into a pandas DataFrame using panda, revealing 62,957 movie records with seven columns: Unnamed: 0 (an index artifact), id (unique movie identifier), title (movie name),genre (single primary genre), plot (textual plot description), poster_path (poster URL), and genres (multi-label genres as string lists, e.g., <code>['Animation', 'Crime', 'Mystery', 'Action']</code>). To explore plot variability, I added a length column by calculating the character count of each plot, finding, for example, 291 characters for <em>Detective Conan: The Lost Ship in the Sky</em>. This step helped assess the diversity of plot descriptions, which ranged from 98 to 452 characters in the sample data, informing preprocessing decisions.<br><br>
+									
+									<strong>Text Preprocessing:</strong> I defined a text cleaning function to standardize plot descriptions and remove noise. The function converts text to lowercase, URLs starting with pic, and all characters except letters and apostrophes (replacing others with spaces). It eliminates standalone single letters (e.g., “ a ”), strips punctuation, and uses NLTK’s word_tokenize to split text into words. Common English stopwords (e.g., “the,” “is”) and words with two or fewer characters are removed to focus on meaningful terms. Multiple spaces are normalized, and leading/trailing spaces are trimmed. I applied this function to all plots, creating cleaned versions (e.g., “A terrorist group invades a laboratory” becomes “terrorist group invades laboratory”). <br><br>
+									
+									<strong>Genre Encoding and Data Splitting:</strong> I parsed the genres column, which contained string representations of lists, into actual Python lists . I used scikit-learn’s MultiLabelBinarizer to encode these lists into a binary matrix, where each movie is represented by a vector of 19 elements (corresponding to unique genres like Action, Drama, etc.), with 1 indicating a genre’s presence and 0 its absence. For example,['Action', 'Drama']might yield <code>[1, 0, 0, 1, ...]</code>. I split the padded sequences and genre matrix into training (80%, ~50,366 samples) and testing (20%, ~12,591 samples) sets using train_test_split, ensuring randomized but reproducible splits due to the fixed seed.<br><br>
+									
+									<strong>Word Embeddings:</strong> To capture semantic relationships, I trained a Word2Vec model using Gensim on the tokenized plots, generating 100-dimensional word embeddings. The model was configured with a minimum word frequency and context window to optimize embedding quality. I constructed an embedding matrix of shape 10,000 × 100, mapping each word in the tokenizer’s vocabulary to its Word2Vec embedding. Words absent from the Word2Vec model were assigned zero vectors, ensuring compatibility with the model’s embedding layer.<br><br>
+									
+									<strong>BiLSTM Model Architecture:</strong> I designed a BiLSTM classifier in PyTorch with the following components: an embedding layer , a dropout layer (0.3 rate to prevent overfitting), a two-layer bidirectional LSTM s with dropout between layers, and a fully connected layer mapping the concatenated final hidden states to 19 genre scores. The bidirectional LSTM processes sequences forward and backward, capturing contextual dependencies, while the output layer produces raw scores for multi-label classification.<br><br>
+									
+									<strong>Model Training:</strong> I created a custom PyTorch Dataset to pair padded sequences with genre vectors, enabling batch processing via DataLoader objects (batch size ~32, shuffling for training). I used Binary Cross-Entropy with Logits Loss, combining sigmoid activation and loss computation, and the Adam optimizer (learning rate ~0.001). I trained the model for 10 epochs, computing training and validation losses per epoch. Training involved forward passes, loss calculation, backpropagation, and weight updates, while validation assessed performance without updates. Losses were plotted, showing a downward trend, indicating learning. I saved the model weights to bilstm_model.pth, metadata (e.g., vocabulary size, genre names) to metadata.json, and the tokenizer and MultiLabelBinarizer totokenizer.pkl and mlb.pkl.<br><br>
+									
+									<strong>Model Evaluation:</strong> I evaluated the model on the test set in evaluation mode, generating predictions by applying a sigmoid function to output scores . I produced a classification report detailing precision, recall, and F1-score per genre, noting stronger performance for common genres (e.g., Drama, Action) and weaker results for rare ones (e.g., Western) due to class imbalance. For each genre, I generated confusion matrices (e.g., Action: TN=8338, FP=1833, FN=682, TP=1738), visualizing them as heatmaps with Seaborn and saving them as PNGs (e.g., confusion_matrix_Action.png), providing insights into prediction errors like false positives.<br><br>
+									<span class="image fit"><img src="images/confusion_matrix_Action.png" alt="" /></span>
+									<span class="image fit"><img src="images/confusion_matrix_Adventure.png" alt="" /></span>
+									<span class="image fit"><img src="images/confusion_matrix_Animation.png" alt="" /></span>
+									<span class="image fit"><img src="images/confusion_matrix_Comedy.png" alt="" /></span>
+									<span class="image fit"><img src="images/confusion_matrix_Crime.png" alt="" /></span>
+									<span class="image fit"><img src="images/confusion_matrix_Documentary.png" alt="" /></span>
+									<span class="image fit"><img src="images/confusion_matrix_Drama.png" alt="" /></span>
+									<span class="image fit"><img src="images/confusion_matrix_Family.png" alt="" /></span>
+									<span class="image fit"><img src="images/confusion_matrix_Fantasy.png" alt="" /></span>
+									<span class="image fit"><img src="images/confusion_matrix_History.png" alt="" /></span>
+									<span class="image fit"><img src="images/confusion_matrix_Horror.png" alt="" /></span>
+									<span class="image fit"><img src="images/confusion_matrix_Music.png" alt="" /></span>
+									<span class="image fit"><img src="images/confusion_matrix_Mystery.png" alt="" /></span>
+									<span class="image fit"><img src="images/confusion_matrix_Romance.png" alt="" /></span>
+									<span class="image fit"><img src="images/confusion_matrix_Science Fiction.png" alt="" /></span>
+									<span class="image fit"><img src="images/confusion_matrix_Thriller.png" alt="" /></span>
+
+									<span class="image fit"><img src="images/confusion_matrix_TV Movie.png" alt="" /></span>
+									<span class="image fit"><img src="images/confusion_matrix_War.png" alt="" /></span>
+									<span class="image fit"><img src="images/confusion_matrix_Western.png" alt="" /></span>
+									<span class="image fit"><img src="images/training_curves.png" alt="" /></span>
+									
+									<strong>Inference on Sample Plot:</strong> I tested the model on a sample plot: “A group of elite hackers is recruited by a secret government agency to stop a rogue AI that threatens to take over the world's financial systems. As they race against time, they uncover a conspiracy that could change the fate of humanity.” I loaded the saved model weights, metadata, tokenizer, and MultiLabelBinarizer. The plot was cleaned, tokenized, padded to 100 tokens. The model predicted probabilities, yielding genres: Action, Adventure, Science Fiction, and Thriller, aligning with the plot’s themes. This demonstrated the model’s practical utility.<br><br>
+									
+									<strong>Conclusion:</strong> The implementation successfully delivers a robust BiLSTM model for multi-label genre classification, with saved components enabling reuse. Challenges like class imbalance and genre overlap suggest future enhancements, such as transformer models or data augmentation, to boost performance.
+								</p>
+								
+							</div>
+						</section>
 						
-						<!-- Six -->
-							<section id="six">
-								<div class="container">
-									<h3>Text Model Discussion</h3>
-									<p>Words about Text model Discussion stuff</p>
-									<span class="image fit"><img src="images/resnet_misses2.png" alt="" /></span>
-								</div>
-							</section>
 						
 						<!-- Seven -->
-							<section id="seven">
-								<div class="container">
-									<h3>Fusion Model Stuff</h3>
-									<p>Words about Fusion model stuff</p>
-									<span class="image fit"><img src="images/resnet_misses2.png" alt="" /></span>
-								</div>
-							</section>
+						<section id="seven">
+							<div class="container">
+								<h3>Fusion Model Overview</h3>
+								<p>
+									This project tackles the problem of <strong>multi-label movie genre classification</strong> using a <strong>fusion model</strong> that integrates both visual and textual modalities. Unlike single-label classifiers, our model predicts multiple applicable genres (e.g., Action + Sci-Fi + Thriller) for a single movie. The key innovation lies in leveraging two distinct but complementary data sources—<strong>movie posters</strong> and <strong>plot summaries</strong>—to provide a richer understanding of the content. This approach is particularly relevant for recommendation systems, content-based filtering, and media analytics platforms.
+								</p>
 						
-						<!-- Eight -->
-							<section id="eight">
-								<div class="container">
-									<h3>Fusion Model Discussion</h3>
-									<p>Words about Fusion model Discussion stuff</p>
-									<span class="image fit"><img src="images/resnet_misses2.png" alt="" /></span>
+								<p>
+									The fusion architecture addresses challenges such as:
+									<ul>
+										<li>High inter-class overlap (e.g., Action vs. Thriller)</li>
+										<li>Class imbalance (frequent genres like Drama vs. rare ones like Western)</li>
+										<li>Subtle genre cues that may exist in only one modality (e.g., Family themes in text, Horror cues in posters)</li>
+									</ul>
+									Through extensive experimentation with deep learning models, the project illustrates how combining textual and visual features improves both performance and interpretability.
+								</p>
+						
+								<h3>Model Selection and Rationale</h3>
+								<ul>
+									<li>
+										<strong>ResNet18:</strong> Initially used for image classification due to its computational efficiency and fast convergence. It served as a strong baseline but lacked the depth to capture high-level abstractions in movie posters.
+									</li>
+									<li>
+										<strong>ResNet50:</strong> Introduced to overcome limitations of ResNet18. It is a deeper convolutional neural network capable of capturing intricate patterns, visual themes, and compositional structure—crucial for visually rich genres like Fantasy, Horror, and Sci-Fi.
+									</li>
+									<li>
+										<strong>BERT:</strong> Used to encode plot summaries. As a transformer-based model, BERT captures contextual relationships between words and understands long-range dependencies, enabling genre inference even from abstract or indirect plot descriptions. The final `[CLS]` token output was used as the plot representation.
+									</li>
+								</ul>
+						
+								<p>
+									The <strong>fusion model</strong> combines these features (2048-dim image vector + 768-dim BERT embedding) and passes them through a fully connected classifier. This multi-modal setup significantly improves performance by allowing the model to attend to both literal and visual genre indicators.
+								</p>
+						
+								<h3>Training and Optimization</h3>
+								<p>
+									To train the fusion model effectively:
+									<ul>
+										<li>Used the <strong>AdamW</strong> optimizer with weight decay for regularization.</li>
+										<li>Employed <strong>Binary Cross-Entropy Loss (BCEWithLogitsLoss)</strong> with per-genre weights to handle label imbalance.</li>
+										<li>Performed <strong>dynamic threshold tuning</strong> per genre to convert predicted probabilities to binary labels that maximize F1 score.</li>
+										<li>Implemented <strong>learning rate scheduling</strong> and <strong>dropout regularization</strong> to improve generalization and prevent overfitting.</li>
+									</ul>
+									The training was conducted for 10 epochs using GPU acceleration, with periodic validation to monitor convergence and detect overfitting.
+								</p>
+						
+								<h3>Performance Summary</h3>
+								<ul>
+									<li><strong>ResNet18 (Image-Only)</strong>: Final F1 Score = 0.1896; struggled with recall due to limited feature depth.</li>
+									<li><strong>ResNet50 (Image-Only, Optimized)</strong>: Final F1 Score = 0.3582; deeper visual features led to noticeable gains in genre differentiation.</li>
+									<li><strong>Fusion (ResNet50 + BERT)</strong>: Final F1 Score = 0.6552; significantly better than unimodal models, confirming the value of multi-modal learning.</li>
+								</ul>
+						
+								<h3>Visualizations and Insights</h3>
+								<p>The following plots were generated using the fusion model to gain deeper insights into genre prediction behavior:</p>
+								<ul>
+									<li><strong>F1 Score per Genre:</strong> Shows genre-wise prediction quality. Genres like Crime, Documentary, and Romance scored high, while low-frequency genres like Family and Western had weaker performance.</li>
+									<span class="image fit"><img src="images/F1 Score Per Genre.png" alt="" /></span>
+									<p>This bar chart presents the F1 score for each movie genre, offering a clear picture of how well the fusion model performs on individual labels. Genres like Romance, Crime, and Documentary exhibit the highest F1 scores—above 0.80—indicating that the model excels at identifying these genres accurately and consistently. This strong performance is likely due to the distinctive combination of visual and textual patterns present in both the poster and plot for these genres.
+
+										Mid-range performance is observed in genres like Action, Comedy, and Science Fiction, where the model maintains a good balance between precision and recall. However, it’s important to note that performance dips significantly for underrepresented or ambiguous genres such as Family, Western, and War—a direct consequence of class imbalance in the training dataset.
+										
+										This plot is valuable in highlighting where the model is confident and reliable, and where further improvement is needed through techniques such as data augmentation, oversampling, or fine-grained label restructuring.</p>
+									<span class="image fit"><img src="images/multilabel predictions.png" alt="" /></span>
 								</div>
-							</section>
+									<li><strong>TP / FP / FN per Genre:</strong> Stacked bar plots reveal how often the model correctly or incorrectly predicted each genre, highlighting challenges in ambiguous or underrepresented categories.</li>
+									<span class="image fit"><img src="images/TP, FP, FN Per Genre.png" alt="" /></span>
+									<p>This stacked bar chart breaks down the model’s predictions into three key components—True Positives (TP), False Positives (FP), and False Negatives (FN)—for each genre. It offers a granular view into how well the model handles each class beyond just a single metric like accuracy or F1 score.
+
+										Genres like Drama, Romance, and Documentary show a dominant blue section, indicating a high number of true positives. This confirms that the model reliably identifies these genres when they are present. However, genres such as Comedy and Crime display a significant proportion of false positives (orange), suggesting that while the model is actively predicting these genres, it occasionally does so incorrectly—possibly due to overlapping features with other genres like Action or Thriller.
+										
+										Notably, genres like Family, TV Movie, and Thriller exhibit a large share of false negatives (green), indicating the model often misses these genres when they should be predicted. This reveals an important limitation—these genres may lack strong or unique cues in the input data, or they may be underrepresented in the training set.
+										
+										This chart is especially useful for debugging genre-specific weaknesses, as it visually highlights where the model is overconfident (high FP) or under-sensitive (high FN). It reinforces the need for balancing the dataset, fine-tuning genre-specific thresholds, or employing targeted augmentation strategies.</p>
+									<li><strong>Precision-Recall and ROC Curves:</strong> Offer genre-specific performance metrics. AUC scores above 0.90 for multiple genres (e.g., Fantasy, Horror) suggest strong classification boundaries.</li>
+									<span class="image fit"><img src="images/ROC Curve.png" alt="" /></span>
+									<p>The ROC (Receiver Operating Characteristic) curve provides a genre-by-genre evaluation of the model’s ability to distinguish between positive and negative classes. The curve plots the true positive rate (sensitivity) against the false positive rate for different decision thresholds. The Area Under the Curve (AUC) score, shown in parentheses for each genre, quantifies this performance: a score close to 1.0 indicates excellent separability.
+
+										Genres such as Documentary (AUC = 0.95), Crime (0.92), Romance (0.90), and Animation (0.94) demonstrate outstanding AUC values, suggesting the model is highly effective at correctly identifying these genres with minimal false alarms. Even visually and semantically nuanced genres like Fantasy and Horror achieve AUC scores above 0.80, highlighting the strength of the multi-modal fusion approach in complex prediction scenarios.
+										
+										On the other hand, genres like Drama (AUC = 0.68) show relatively lower AUC scores. This may reflect their high intra-class variability or overlapping features with other genres (e.g., Romance, History). Furthermore, several genres—including War, Western, and TV Movie—returned AUC as nan, indicating either insufficient positive samples in the test set or absence of predictions. This reinforces the importance of addressing class imbalance during training.
+										
+										Overall, this ROC curve visualization validates the fusion model’s robust discriminative capability, especially for well-represented genres, and also helps identify where further dataset enrichment is needed.</p>
+									<li><strong>Confidence Histogram:</strong> Distribution of model confidence levels for all predictions, useful for calibration analysis.</li>
+									<span class="image fit"><img src="images/Model Confidence Distribution.png" alt="" /></span>
+									<p>This histogram visualizes the distribution of the model’s predicted confidence scores across all movie-genre pairs. Each bar represents the number of predictions that fall within a specific confidence interval, giving insight into how confident the model is when assigning genres.
+
+										The skewed distribution toward the lower end—particularly around 0.1 to 0.3—indicates that the majority of predictions are made with relatively low confidence. This is typical in multi-label classification, where the model often outputs probabilities for multiple genres, many of which may not be relevant. A long tail extending toward the right suggests that the model is confidently predicting a smaller subset of genre associations—likely for more distinguishable and well-represented genres.
+										
+										This plot is particularly useful for evaluating calibration: whether the predicted probabilities reflect actual correctness. In this case, the distribution supports the decision to implement threshold tuning per genre, allowing the model to make sharper distinctions for high-confidence predictions while suppressing uncertain ones.
+										
+										Overall, this analysis helps ensure that genre predictions are not only accurate but also trustworthy—especially critical for downstream applications like recommendation systems.</p>
+									<li><strong>Ablation Study:</strong> Confirms that the fusion model outperforms text-only and image-only variants, validating the architectural design.</li>
+									<span class="image fit"><img src="images/Ablation Study.png" alt="" /></span>
+									<p>This bar chart compares the F1 scores of three different model configurations: Text Only, Image Only, and the full Fusion Model. The goal of this ablation study is to evaluate how each input modality contributes to the overall performance and to validate whether combining them truly adds value.
+
+										The Fusion Model, which integrates both ResNet50 (image features) and BERT (text features), achieves the highest F1 score—demonstrating that the two modalities provide complementary information that significantly boosts genre classification performance. On the other hand, while the Image Only and Text Only models perform reasonably well in isolation, they lag behind the fusion approach, each missing important context that the other provides.
+										
+										This result strongly justifies the decision to pursue a multi-modal architecture. It also highlights that neither the visual nor textual features alone are sufficient to capture the full complexity of multi-genre movie classification. The fusion strategy delivers a balanced understanding of both what a movie is about and how it is visually presented—leading to more accurate and reliable predictions.</p>
+								</ul>
+						
+								<h3>Label Distribution</h3>
+								<p>
+									The dataset contains over 29,000 labeled movie records with multi-label annotations. Genres like Drama, Comedy, and Action are highly represented, while genres such as Music, Western, and War are rare. This imbalance influenced model performance and was addressed with weighted loss functions and threshold optimization.
+								</p>
+						
+								<h3>Conclusion and Future Work</h3>
+								<p>
+									This project demonstrates a successful implementation of multi-modal learning for complex classification tasks. By combining state-of-the-art visual and textual models—ResNet50 and BERT—we achieved high predictive performance and deep genre understanding. The approach is scalable to other domains like book classification, news categorization, or content moderation.
+								</p>
+								<p>
+									Future work includes:
+									<ul>
+										<li>Using attention-based fusion layers instead of simple concatenation.</li>
+										<li>Exploring deeper architectures like EfficientNet-V2 and RoBERTa.</li>
+										<li>Balancing the dataset with synthetic samples or generative augmentation for rare genres.</li>
+										<li>Deploying the model via a web interface for interactive genre prediction.</li>
+									</ul>
+								</p>
+						
+							</div>
+						</section>
 
 						<!-- Nine -->
 							<section id="nine">
@@ -459,6 +598,7 @@
 									<p>[5]	He, K., Zhang, X., Ren, S., Sun, J.  Deep Residual Learning for Image Recognition. arXiv:1512.03385, 2015</p>
 									<p>[6]	Dosovitskiy, A., Beyer, L., Kolesnikov, A., Weissenborn, D., Zhai, X., Unterthiner, T., Dehghani, M., Minderer, M., Heigold, G., Gelly, S., Uszkoreit, J., Houlsby, N. An Image is Worth 16x16 Words: Transformers for Image Recognition at Scale. arXiv:2010.11929, 2020</p>
 								</div>
+								<span class="image fit"><img src="images/resnet_misses2.png" alt="ResNet Classification Visualization" /></span>
 							</section>
 						<!-- Six -->
 						<!-- 
